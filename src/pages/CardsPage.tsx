@@ -41,7 +41,7 @@ export default function CardsPage() {
           onClick={logout}
           className="underline text-sm text-zinc-400 hover:text-zinc-200"
         >
-          ← Log out
+          ← LogOut
         </button>
         <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight mt-7 mx-auto">
           Sound<span className="text-emerald-400">Haven</span>
