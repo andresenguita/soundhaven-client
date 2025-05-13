@@ -1,0 +1,21 @@
+/* -------------------------------------------------
+   Tailwind layers
+   ------------------------------------------------- */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---------- Base ---------- */
+@layer base {
+  body {
+    /* Modo oscuro permanente */
+    @apply m-0 text-white bg-gradient-to-br from-zinc-900 via-zinc-900 to-black;
+  }
+}
+
+/* ---------- Utilidades personalizadas ---------- */
+@layer utilities {
+  .perspective     { perspective: 1000px; }
+  .backface-hidden { backface-visibility: hidden; }
+  .rotate-y-180    { transform: rotateY(180deg); }
+}
