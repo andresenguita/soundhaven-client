@@ -1,86 +1,70 @@
-import { Dialog, Transition } from "@headlessui/react";
-import { Fragment, useState } from "react";
+import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import GuideCarousel from "./GuideCarousel";
 
-const slides = [
-  { img: "/guide/step1.png", caption: "Gira una de las tres cartas diarias" },
-  { img: "/guide/step2.png", caption: "Escucha la canción que revela" },
-  { img: "/guide/step3.png", caption: "Añádela a tu playlist SoundHaven" },
-];
-
-export default function GuideModal({
-  open,
-  onClose,
-}: {
-  open: boolean;
+type Props = {
   onClose: () => void;
-}) {
-  const [idx, setIdx] = useState(0);
+  onCreatePlaylist: () => void | Promise<void>;
+};
+
+export default function GuideModal({ onClose, onCreatePlaylist }: Props) {
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const esc = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", esc);
+    return () => window.removeEventListener("keydown", esc);
+  }, [onClose]);
 
   return (
-    <Transition appear show={open} as={Fragment}>
-      <Dialog as="div" className="relative z-10" onClose={onClose}>
-        {/* Fondo oscurecido */}
-        <Transition.Child
-          as={Fragment}
-          enter="ease-out duration-150"
-          enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leave="ease-in duration-100"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+
+      <div
+        className="relative flex flex-col items-center text-white px-16 py-12
+             w-[96vw] max-w-7xl rounded-2xl border border-transparent bg-transparent"
+      >
+        {/* flecha roja */}
+        <button
+          onClick={onClose}
+          className="fixed top-6 left-6 z-[60] text-red-400 hover:text-red-500 transition"
+          aria-label="logout"
         >
-          <div className="fixed inset-0 bg-black/70" />
-        </Transition.Child>
-
-        {/* Ventana */}
-        <div className="fixed inset-0 flex items-center justify-center p-4">
-          <Transition.Child
-            as={Fragment}
-            enter="ease-out duration-150"
-            enterFrom="opacity-0 scale-95"
-            enterTo="opacity-100 scale-100"
-            leave="ease-in duration-100"
-            leaveFrom="opacity-100 scale-100"
-            leaveTo="opacity-0 scale-95"
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="w-8 h-8"
           >
-            <Dialog.Panel className="w-full max-w-sm sm:max-w-lg lg:max-w-2xl bg-zinc-800 text-white rounded-2xl p-6 space-y-6">
-              <img
-                src={slides[idx].img}
-                alt=""
-                className="w-full object-cover rounded-lg"
-              />
-              <p className="text-center">{slides[idx].caption}</p>
+            <line x1="19" y1="12" x2="5" y2="12" />
+            <polyline points="12 19 5 12 12 5" />
+          </svg>
+        </button>
 
-              {/* Controles */}
-              <div className="flex justify-between">
-                <button
-                  disabled={idx === 0}
-                  onClick={() => setIdx((i) => Math.max(i - 1, 0))}
-                  className="disabled:opacity-30"
-                >
-                  ← Prev
-                </button>
-                {idx < slides.length - 1 ? (
-                  <button
-                    onClick={() =>
-                      setIdx((i) => Math.min(i + 1, slides.length - 1))
-                    }
-                  >
-                    Next →
-                  </button>
-                ) : (
-                  <button
-                    onClick={onClose}
-                    className="font-semibold text-emerald-400"
-                  >
-                    Got it!
-                  </button>
-                )}
-              </div>
-            </Dialog.Panel>
-          </Transition.Child>
+        <GuideCarousel onFinish={() => setReady(true)} />
+
+        <div className="mt-6 flex justify-center h-14">
+          <AnimatePresence>
+            {ready && (
+              <motion.button
+                key="cta"
+                onClick={onCreatePlaylist}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                transition={{ duration: 0.35 }}
+                className="px-10 py-3 rounded-full font-semibold
+                           bg-emerald-500 hover:bg-emerald-600 text-black"
+              >
+                Crear playlist y comenzar
+              </motion.button>
+            )}
+          </AnimatePresence>
         </div>
-      </Dialog>
-    </Transition>
+      </div>
+    </div>
   );
 }

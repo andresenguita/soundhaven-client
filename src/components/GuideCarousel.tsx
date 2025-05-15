@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 /* 6 pasos de la guía */
 const slides = [
-  { img: "/guide/step1.png", caption: "Flip one of the three daily cards" },
+  { img: "/guide/step1A.png", caption: "Flip one of the three daily cards" },
   { img: "/guide/step2.png", caption: "Listen to the track it reveals" },
   { img: "/guide/step3.png", caption: "Add it to your SoundHaven playlist" },
   { img: "/guide/step4.png", caption: "Keep your daily streak alive" },
@@ -10,31 +10,61 @@ const slides = [
   { img: "/guide/step6.png", caption: "Explore your discovery log" },
 ];
 
-export default function GuideCarousel() {
+type Props = { onFinish?: () => void };
+
+export default function GuideCarousel({ onFinish }: Props) {
   const [idx, setIdx] = useState(0);
+  const [visited, setVisited] = useState(() =>
+    Array(slides.length).fill(false)
+  );
+
+  /* Avanza / retrocede sin loop */
   const go = (d: -1 | 1) =>
-    setIdx((i) => (i + d + slides.length) % slides.length);
+    setIdx((i) => Math.min(Math.max(i + d, 0), slides.length - 1));
+
+  /* Marca visitada */
+  useEffect(() => {
+    setVisited((v) => {
+      if (v[idx]) return v;
+      const clone = [...v];
+      clone[idx] = true;
+      return clone;
+    });
+  }, [idx]);
+
+  /* Callback al terminar */
+  useEffect(() => {
+    if (visited.every(Boolean)) onFinish?.();
+  }, [visited, onFinish]);
 
   return (
     <section
-      className="mt-12 inline-flex flex-col items-center gap-6
-                        bg-zinc-800/30 border border-zinc-700/60
-                        px-10 py-8 rounded-2xl"
+      className="mt-6 inline-flex flex-col items-center gap-6
+                 bg-zinc-800/30 border border-zinc-700/60 backdrop-blur-md
+                 px-16 py-8 rounded-2xl"
     >
       <h2 className="text-lg font-semibold text-zinc-200">HOW DOES IT WORK?</h2>
 
-      {/* imagen + flechas */}
-      <div className="relative flex items-center">
-        <Arrow dir="prev" onClick={() => go(-1)} />
-
-        {/* ⬆️ ancho +10 %: 31 rem / 37 rem */}
+      {/* Imagen (relative) + flechas absolutas */}
+      <div className="relative">
         <img
           src={slides[idx].img}
           alt=""
-          className="w-[34rem] lg:w-[40rem] aspect-video rounded-md shadow-md object-cover"
+          className="w-[32rem] md:w-[38rem] lg:w-[44rem] aspect-video rounded-md shadow-md object-cover mx-auto"
         />
 
-        <Arrow dir="next" onClick={() => go(1)} />
+        <Arrow
+          dir="prev"
+          disabled={idx === 0}
+          onClick={() => go(-1)}
+          position="left"
+        />
+        <Arrow
+          dir="next"
+          disabled={idx === slides.length - 1}
+          onClick={() => go(1)}
+          position="right"
+        />
       </div>
 
       <p className="text-center text-sm md:text-base">{slides[idx].caption}</p>
@@ -46,11 +76,11 @@ export default function GuideCarousel() {
             key={i}
             onClick={() => setIdx(i)}
             className={`w-3 h-3 rounded-full transition
-              ${
-                i === idx
-                  ? "bg-emerald-400 scale-110"
-                  : "bg-zinc-500/40 hover:bg-zinc-400/70"
-              }`}
+                        ${
+                          i === idx
+                            ? "bg-emerald-400 scale-110"
+                            : "bg-zinc-500/40 hover:bg-zinc-400/70"
+                        }`}
             aria-label={`go to step ${i + 1}`}
           />
         ))}
@@ -59,34 +89,43 @@ export default function GuideCarousel() {
   );
 }
 
-/* flecha rectangular */
+/* ---------- Flecha ---------- */
 function Arrow({
   dir,
+  position,
   onClick,
+  disabled,
 }: {
   dir: "prev" | "next";
+  position: "left" | "right";
   onClick: () => void;
+  disabled: boolean;
 }) {
-  const isPrev = dir === "prev";
+  const rotate = dir === "next" ? "rotate-180" : "";
+  const side =
+    position === "left"
+      ? "left-0 -translate-x-full"
+      : "right-0 translate-x-full";
+  const invisible = disabled ? "opacity-0 pointer-events-none" : "";
+
   return (
     <button
       onClick={onClick}
-      className={`hidden md:flex items-center justify-center transition
-                  w-10 h-24 bg-zinc-600 hover:bg-zinc-500
-                  ${isPrev ? "rounded-l-md" : "rounded-r-md"}`}
+      className={`absolute top-1/2 -translate-y-1/2 ${side}
+                 w-10 h-24 flex items-center justify-center
+                 bg-zinc-600 hover:bg-zinc-500 transition ${invisible}`}
+      style={{
+        borderRadius:
+          dir === "prev" ? "0.375rem 0 0 0.375rem" : "0 0.375rem 0.375rem 0",
+      }}
       aria-label={dir}
     >
       <svg
-        xmlns="http://www.w3.org/2000/svg"
-        className={`w-5 h-5 text-white ${isPrev ? "" : "rotate-180"}`}
-        viewBox="0 0 20 20"
+        viewBox="0 0 24 24"
+        className={`w-5 h-5 text-white ${rotate}`}
         fill="currentColor"
       >
-        <path
-          fillRule="evenodd"
-          d="M12.293 15.707a1 1 0 01-1.414 0l-5-5a1 1 0 010-1.414l5-5a1 1 0 111.414 1.414L8.414 10l3.879 3.879a1 1 0 010 1.414z"
-          clipRule="evenodd"
-        />
+        <path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
       </svg>
     </button>
   );

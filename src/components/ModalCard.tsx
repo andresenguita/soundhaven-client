@@ -1,49 +1,44 @@
-import { motion, AnimatePresence } from "framer-motion";
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 
-interface ModalCardProps {
+type Props = {
   open: boolean;
-  id: string;
-  children: ReactNode;
+  id?: string;
   onClose: () => void;
-}
+  children: ReactNode;
+};
 
-const layoutTransition = { type: "spring", stiffness: 500, damping: 30 };
+export default function ModalCard({ open, id, onClose, children }: Props) {
+  /* Cerrar con Escape cuando está abierto */
+  useEffect(() => {
+    if (!open) return;
+    const esc = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", esc);
+    return () => window.removeEventListener("keydown", esc);
+  }, [open, onClose]);
 
-export default function ModalCard({
-  open,
-  id,
-  children,
-  onClose,
-}: ModalCardProps) {
+  if (!open) return null;
+
   return (
-    <AnimatePresence>
-      {open && (
-        <>
-          {/* Backdrop */}
-          <motion.div
-            className="fixed inset-0 z-40 bg-black/70"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            onClick={onClose}
-          />
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* sombreado */}
+      <div
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        onClick={onClose}
+      />
 
-          {/* Wrapper flex que centra el contenido */}
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div
-              layoutId={id}
-              transition={layoutTransition}
-              /* 83 vh de alto, proporción 2:3, sin salirse de 90 vw */
-              className="h-[83vh] max-h-[90vh] aspect-[2/3] max-w-[90vw]
-                         w-auto rounded-md overflow-hidden"
-            >
-              {children}
-            </motion.div>
-          </div>
-        </>
-      )}
-    </AnimatePresence>
+      {/* contenido */}
+      <div
+        id={id}
+        className="relative bg-zinc-900 text-white rounded-2xl shadow-2xl p-8"
+      >
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-4 text-2xl leading-none hover:text-zinc-300"
+        >
+          ×
+        </button>
+        {children}
+      </div>
+    </div>
   );
 }
