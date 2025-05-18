@@ -1,3 +1,4 @@
+// src/App.tsx
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
@@ -9,12 +10,23 @@ export default function App() {
 
   if (!initialized) return null;
 
+  const firstLoginDone = localStorage.getItem("firstLoginDone");
+
   return (
     <Routes>
       <Route
         path="/"
-        element={!token ? <LoginPage /> : <Navigate to="/cards" replace />}
+        element={
+          !token ? (
+            <LoginPage />
+          ) : !firstLoginDone ? (
+            <Navigate to="/guide" replace />
+          ) : (
+            <Navigate to="/cards" replace />
+          )
+        }
       />
+      <Route path="/guide" element={<LoginPage showGuideOnly />} />
       <Route
         path="/cards"
         element={token ? <CardsPage /> : <Navigate to="/" replace />}

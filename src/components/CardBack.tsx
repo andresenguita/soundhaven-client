@@ -8,6 +8,7 @@ interface Props {
   token: string;
   img: string;
   onAdd: () => void;
+  showControls?: boolean; // ← NUEVO
 }
 
 const API_URL = import.meta.env.VITE_API_URL ?? "";
@@ -19,6 +20,7 @@ export default function CardBack({
   img,
   token,
   onAdd,
+  showControls = true,
 }: Props) {
   const { isPaused, playTrack, pause } = useSpotifyPlayer();
 
@@ -33,7 +35,7 @@ export default function CardBack({
   };
 
   return (
-    <div className="w-full h-full bg-gray-200 transition  text-black rounded-2xl  p-6 pt-8 flex flex-col items-center justify-between">
+    <div className="w-full h-full bg-gray-200 transition text-black rounded-2xl p-6 pt-8 flex flex-col items-center justify-between">
       <img
         src={img}
         alt={title}
@@ -42,23 +44,26 @@ export default function CardBack({
 
       <div className="text-center mt-7">
         <h3 className="text-2xl font-semibold mb-1">{title}</h3>
-        <p className=" text-base">{artist}</p>
+        <p className="text-base">{artist}</p>
       </div>
 
-      <button
-        onClick={handleClick}
-        className="rounded-full w-14 h-14 text-2xl text-gray-200 bg-black flex items-center justify-center  hover:scale-110 transition shadow-md mt-8 hover:brightness-110"
-      >
-        {isPaused ? "⯈" : "𝅛𝅛"}
-      </button>
+      {showControls && (
+        <>
+          <button
+            onClick={handleClick}
+            className="rounded-full w-14 h-14 text-2xl text-gray-200 bg-black flex items-center justify-center hover:scale-110 transition shadow-md mt-8 hover:brightness-110"
+          >
+            {isPaused ? "⯈" : "𝅛𝅛"}
+          </button>
 
-      <button
-        onClick={onAdd}
-        className="mt-7 px-6 py-2 mb-3 text-lg rounded-xl font-medium shadow-md  text-gray-200
-                   hover:brightness-110 hover:scale-105 transition bg-black"
-      >
-        + Add to SoundHaven playlist
-      </button>
+          <button
+            onClick={onAdd}
+            className="mt-7 px-6 py-2 mb-3 text-lg rounded-xl font-medium shadow-md text-gray-200 hover:brightness-110 hover:scale-105 transition bg-black"
+          >
+            + Add to SoundHaven playlist
+          </button>
+        </>
+      )}
     </div>
   );
 }

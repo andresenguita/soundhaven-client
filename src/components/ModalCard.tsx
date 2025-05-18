@@ -29,7 +29,7 @@ export default function ModalCard({ open, id, onClose, children }: Props) {
       {/* contenido de la carta centrado y más grande */}
       <div
         id={id}
-        className="relative bg-transparent text-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-[95vw] sm:max-w-lg w-full"
+        className="relative bg-transparent text-white rounded-2xl  p-6 sm:p-8 max-w-[95vw] sm:max-w-lg w-full"
       >
         {/* botón cerrar arriba a la derecha */}
         <button

@@ -9,7 +9,8 @@ interface Card3DProps {
   back: ReactNode;
   isFlipped: boolean;
   onSelect: () => void;
-  description?: string; // ← NUEVO
+  description?: string;
+  disabled?: boolean;
 }
 
 const layoutTransition = { type: "spring", stiffness: 500, damping: 30 };
@@ -21,14 +22,17 @@ export default function Card3D({
   isFlipped,
   onSelect,
   description,
+  disabled = false,
 }: Card3DProps) {
   return (
     <motion.div
       layoutId={id}
-      className={`relative w-72 aspect-[2/3] perspective group cursor-pointer ${
-        isFlipped ? "invisible" : ""
-      }`}
-      onClick={onSelect}
+      className={`relative w-72 aspect-[2/3] perspective group ${
+        disabled ? "cursor-default" : "cursor-pointer"
+      } ${isFlipped ? "invisible" : ""}`}
+      onClick={() => {
+        if (!disabled) onSelect();
+      }}
       transition={layoutTransition}
     >
       {/* Descripción al hacer hover */}
@@ -36,7 +40,7 @@ export default function Card3D({
         <div
           className="m-0 absolute top-0 left-0 w-full z-20 px-4 py-2 text-sm text-white bg-black/60 
                       opacity-0 -translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 
-                     transition-all duration-300 scale-95 rounded-md shadow-lg mt-1"
+                      transition-all duration-300 scale-95 rounded-xl shadow-lg mt-1"
         >
           {description}
         </div>
@@ -49,7 +53,7 @@ export default function Card3D({
         style={{ transformStyle: "preserve-3d" }}
       >
         {/* Cara frontal */}
-        <div className="absolute inset-0 backface-hidden rounded-md overflow-hidden shadow-lg hover:border-2 border-emerald-500 hover:scale-105  transition-all">
+        <div className="absolute inset-0 backface-hidden rounded-xl overflow-hidden shadow-lg hover:border-2 border-emerald-500 hover:scale-105 transition-all">
           {front}
         </div>
 

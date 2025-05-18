@@ -27,6 +27,7 @@ export default function CardsPage() {
 
   const [cards, setCards] = useState<CardData[]>([]);
   const [selected, setSelected] = useState<number | null>(null);
+  const [visibleCards, setVisibleCards] = useState<CardData[]>([]);
   const [showGuideModal, setShowGuideModal] = useState(false);
 
   useEffect(() => {
@@ -40,9 +41,24 @@ export default function CardsPage() {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
-      .then((data: CardData[]) => setCards(data))
+      .then((data: CardData[]) => {
+        setCards(data);
+        setVisibleCards(getRandomCards(data, 3));
+      })
       .catch(console.error);
   }, [token]);
+
+  useEffect(() => {
+    if (parseInt(time) === 0 && cards.length > 0) {
+      setVisibleCards(getRandomCards(cards, 3));
+      setSelected(null);
+    }
+  }, [time]);
+
+  const getRandomCards = (data: CardData[], count: number) => {
+    const shuffled = [...data].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, count);
+  };
 
   const handleCreatePlaylistAndContinue = async () => {
     try {
@@ -76,7 +92,9 @@ export default function CardsPage() {
         body: JSON.stringify({ uri }),
       });
 
-      if (!res.ok) throw new Error("No se pudo añadir a la playlist");
+      const data = await res.json();
+      if (!res.ok)
+        throw new Error(data.error || "No se pudo añadir a la playlist");
       console.log("✅ Añadida a la playlist");
     } catch (e) {
       console.error("❌ Error al añadir canción:", e);
@@ -96,59 +114,43 @@ export default function CardsPage() {
         <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight mt-7 mx-auto">
           Sound<span className="text-emerald-400">Haven</span>
         </h1>
-
-        <div className="w-7 h-7" />
       </header>
 
       <LayoutGroup>
-        <section className="flex-grow flex justify-center items-center">
-          <div className="flex gap-14 flex-wrap justify-center px-4">
-            {cards.map((c, i) => (
+        <div className="flex-grow flex items-center justify-center">
+          <div className="flex gap-10 flex-wrap justify-center items-center">
+            {visibleCards.map((card, i) => (
               <Card3D
                 key={i}
                 id={`card-${i}`}
-                description={c.description}
                 front={
                   <img
-                    src={c.img}
-                    alt={c.title}
-                    className="w-full h-full object-cover"
+                    src={card.img}
+                    alt={card.title}
+                    className="w-full h-full object-cover rounded-xl"
                   />
                 }
                 back={
                   <CardBack
-                    title={c.title}
-                    artist={c.artist}
-                    uri={c.uri}
+                    {...card}
+                    img={card.cover} // ← cover en lugar de img
                     token={token!}
-                    img={c.cover}
-                    onAdd={() => handleAddToPlaylist(c.uri)}
+                    onAdd={() => handleAddToPlaylist(card.uri)}
+                    showControls={false} // ← sin botones en el tablero
                   />
                 }
-                isFlipped={i === selected}
+                isFlipped={selected === i}
                 onSelect={() => setSelected(i)}
+                description={card.description}
               />
             ))}
           </div>
-        </section>
-
-        {selected !== null && (
-          <ModalCard
-            open
-            id={`card-${selected}`}
-            onClose={() => setSelected(null)}
-          >
-            <CardBack
-              title={cards[selected].title}
-              artist={cards[selected].artist}
-              uri={cards[selected].uri}
-              token={token!}
-              img={cards[selected].cover}
-              onAdd={() => handleAddToPlaylist(cards[selected].uri)}
-            />
-          </ModalCard>
-        )}
+        </div>
       </LayoutGroup>
+
+      <footer className="py-8 text-center text-zinc-600">
+        Our next sound voyage in: <span className="font-medium">{time}</span>
+      </footer>
 
       {showGuideModal && (
         <GuideModal
@@ -157,9 +159,16 @@ export default function CardsPage() {
         />
       )}
 
-      <footer className="py-8 text-center text-zinc-400 text-xl">
-        Our next sound voyage in: <span className="font-medium">{time}</span>
-      </footer>
+      <ModalCard open={selected !== null} onClose={() => setSelected(null)}>
+        {selected !== null && (
+          <CardBack
+            {...visibleCards[selected]}
+            img={visibleCards[selected].cover} // ← cover también en el modal
+            token={token!}
+            onAdd={() => handleAddToPlaylist(visibleCards[selected].uri)}
+          />
+        )}
+      </ModalCard>
     </main>
   );
 }

@@ -1,10 +1,14 @@
+// src/pages/LoginPage.tsx
 import GuideCarousel from "../components/GuideCarousel";
 
-export default function LoginPage() {
-  const API_URL = import.meta.env.VITE_API_URL ?? "";
+type Props = {
+  showGuideOnly?: boolean;
+};
 
+const API_URL = import.meta.env.VITE_API_URL ?? "";
+
+export default function LoginPage({ showGuideOnly = false }: Props) {
   const handleLogin = () => {
-    localStorage.removeItem("firstLoginDone");
     window.location.href = `${API_URL}/api/auth/login`;
   };
 
@@ -14,21 +18,22 @@ export default function LoginPage() {
         Sound<span className="text-emerald-400">Haven</span>
       </h1>
 
-      <button
-        onClick={handleLogin}
-        className="flex items-center gap-3 bg-emerald-500 hover:bg-emerald-600
-                 active:scale-95 transition font-semibold text-black
-                 py-3 px-7 rounded-full"
-      >
-        <img
-          src="/spotify_primary_logo_rgb_black.png"
-          alt=""
-          className="w-6 h-6"
-        />
-        Login with Spotify
-      </button>
+      {!showGuideOnly && (
+        <button
+          onClick={handleLogin}
+          className="flex items-center gap-3 bg-emerald-500 hover:bg-emerald-600
+                   active:scale-95 transition font-semibold text-black
+                   py-3 px-7 rounded-full"
+        >
+          <img
+            src="/spotify_primary_logo_rgb_black.png"
+            alt=""
+            className="w-6 h-6"
+          />
+          Login with Spotify
+        </button>
+      )}
 
-      {/* Carrusel ancho y centrado */}
       <div className="mb-1 w-full max-w-4xl">
         <GuideCarousel />
       </div>
