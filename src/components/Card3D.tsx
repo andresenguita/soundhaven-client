@@ -1,3 +1,4 @@
+// components/Card3D.tsx
 import React from "react";
 import { motion } from "framer-motion";
 import type { ReactNode } from "react";
@@ -8,6 +9,7 @@ interface Card3DProps {
   back: ReactNode;
   isFlipped: boolean;
   onSelect: () => void;
+  description?: string; // ← NUEVO
 }
 
 const layoutTransition = { type: "spring", stiffness: 500, damping: 30 };
@@ -18,29 +20,40 @@ export default function Card3D({
   back,
   isFlipped,
   onSelect,
+  description,
 }: Card3DProps) {
   return (
     <motion.div
       layoutId={id}
-      /* w-72 ≈ 18 rem; cambia si quieres más grande o pequeño
-         aspect-[2/3] asegura alto = ancho × 1.5  */
-      className={`relative w-72 aspect-[2/3] perspective cursor-pointer ${
+      className={`relative w-72 aspect-[2/3] perspective group cursor-pointer ${
         isFlipped ? "invisible" : ""
       }`}
       onClick={onSelect}
       transition={layoutTransition}
     >
+      {/* Descripción al hacer hover */}
+      {!isFlipped && description && (
+        <div
+          className="m-0 absolute top-0 left-0 w-full z-20 px-4 py-2 text-sm text-white bg-black/60 
+                      opacity-0 -translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 
+                     transition-all duration-300 scale-95 rounded-md shadow-lg mt-1"
+        >
+          {description}
+        </div>
+      )}
+
       <motion.div
         animate={{ rotateY: isFlipped ? 180 : 0 }}
         transition={{ duration: 1.2, ease: [0.4, 0, 0.2, 1] }}
         className="relative w-full h-full"
         style={{ transformStyle: "preserve-3d" }}
       >
-        {/* Front side */}
-        <div className="absolute inset-0 backface-hidden rounded-md overflow-hidden shadow-lg">
+        {/* Cara frontal */}
+        <div className="absolute inset-0 backface-hidden rounded-md overflow-hidden shadow-lg hover:border-2 border-emerald-500 hover:scale-105  transition-all">
           {front}
         </div>
-        {/* Back side */}
+
+        {/* Cara trasera */}
         <div className="absolute inset-0 rotate-y-180 backface-hidden rounded-md overflow-hidden shadow-lg">
           {back}
         </div>

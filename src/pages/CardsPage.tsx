@@ -1,3 +1,4 @@
+// pages/CardsPage.tsx
 import { useState, useEffect } from "react";
 import { LayoutGroup } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -13,6 +14,8 @@ interface CardData {
   title: string;
   artist: string;
   uri: string;
+  cover: string;
+  description: string;
 }
 
 const API_URL = import.meta.env.VITE_API_URL ?? "";
@@ -26,12 +29,10 @@ export default function CardsPage() {
   const [selected, setSelected] = useState<number | null>(null);
   const [showGuideModal, setShowGuideModal] = useState(false);
 
-  /* ── 1. Mostrar guía la 1ª vez ─────────────────────────── */
   useEffect(() => {
     if (!localStorage.getItem("firstLoginDone")) setShowGuideModal(true);
   }, []);
 
-  /* ── 2. Traer las cartas ───────────────────────────────── */
   useEffect(() => {
     if (!token) return;
     fetch(`${API_URL}/api/cards`, {
@@ -43,7 +44,6 @@ export default function CardsPage() {
       .catch(console.error);
   }, [token]);
 
-  /* ── 3. Handlers del modal guía ────────────────────────── */
   const handleCreatePlaylistAndContinue = async () => {
     try {
       await fetch(`${API_URL}/api/playlist/create`, {
@@ -60,11 +60,29 @@ export default function CardsPage() {
 
   const handleLogoutAndBack = () => {
     localStorage.removeItem("firstLoginDone");
-    logout(); // mismo efecto que botón «LogOut»
-    navigate("/"); // redirige al login
+    logout();
+    navigate("/");
   };
 
-  /* ── 4. Render ─────────────────────────────────────────── */
+  const handleAddToPlaylist = async (uri: string) => {
+    try {
+      const res = await fetch(`${API_URL}/api/playlist/add`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ uri }),
+      });
+
+      if (!res.ok) throw new Error("No se pudo añadir a la playlist");
+      console.log("✅ Añadida a la playlist");
+    } catch (e) {
+      console.error("❌ Error al añadir canción:", e);
+    }
+  };
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-900 to-black text-white flex flex-col">
       <header className="relative flex items-start justify-between p-8">
@@ -84,11 +102,12 @@ export default function CardsPage() {
 
       <LayoutGroup>
         <section className="flex-grow flex justify-center items-center">
-          <div className="flex gap-14">
+          <div className="flex gap-14 flex-wrap justify-center px-4">
             {cards.map((c, i) => (
               <Card3D
                 key={i}
                 id={`card-${i}`}
+                description={c.description}
                 front={
                   <img
                     src={c.img}
@@ -102,7 +121,8 @@ export default function CardsPage() {
                     artist={c.artist}
                     uri={c.uri}
                     token={token!}
-                    onAdd={() => console.log("Añadir", c.uri)}
+                    img={c.cover}
+                    onAdd={() => handleAddToPlaylist(c.uri)}
                   />
                 }
                 isFlipped={i === selected}
@@ -123,16 +143,16 @@ export default function CardsPage() {
               artist={cards[selected].artist}
               uri={cards[selected].uri}
               token={token!}
-              onAdd={() => console.log("Añadir", cards[selected].uri)}
+              img={cards[selected].cover}
+              onAdd={() => handleAddToPlaylist(cards[selected].uri)}
             />
           </ModalCard>
         )}
       </LayoutGroup>
 
-      {/* Guía inicial */}
       {showGuideModal && (
         <GuideModal
-          onClose={handleLogoutAndBack} // flecha roja = logout
+          onClose={handleLogoutAndBack}
           onCreatePlaylist={handleCreatePlaylistAndContinue}
         />
       )}
