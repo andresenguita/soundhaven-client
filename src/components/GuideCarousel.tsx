@@ -5,12 +5,14 @@ const slides = [
   {
     img: "/guide/step1.png",
     title: "WELCOME TO SOUNDHAVEN",
-    caption: "Let images guide you to songs that speak beyond sound",
+    caption:
+      "Welcome to SoundHaven! Let images guide you to songs that speak beyond sound",
   },
   {
     img: "/guide/step2.png",
     title: "PICK ONE CARD",
-    caption: "Each card hides a song and its image hints at the mood behind it",
+    caption:
+      "Pick one card. Each card hides a song and its image hints at the mood behind it",
   },
   {
     img: "/guide/step3.png",
@@ -26,8 +28,7 @@ const slides = [
   {
     img: "/guide/step5.png",
     title: "NEW CARDS EVERY DAY",
-    caption:
-      "Cards refresh once the countdown reaches zero and every session feels unique",
+    caption: "Cards refresh every 24 hours",
   },
   {
     img: "/guide/step6.png",
@@ -72,20 +73,16 @@ export default function GuideCarousel({ onFinish }: Props) {
 
   return (
     <section
-      className="mt-6 w-full max-w-4xl mx-auto flex flex-col items-center gap-6
-             bg-zinc-800/30 border border-zinc-700/60 backdrop-blur-md
-             px-4 sm:px-8 py-8 rounded-2xl"
+      className="mt- w-full max-w-4xl mx-auto flex flex-col items-center gap-6
+             
+             px-4 sm:px-8 py-8 rounded-2xl "
     >
-      <h2 className="text-lg font-semibold text-zinc-200 mt-0 pt-0">
-        {slides[idx].title}
-      </h2>
-
       {/* Imagen (relative) + flechas absolutas */}
       <div className="relative">
         <img
           src={slides[idx].img}
           alt=""
-          className="w-[32rem] md:w-[38rem] lg:w-[44rem] aspect-video rounded-md shadow-md object-cover mx-auto border border-zinc-700/60"
+          className="w-[32rem] md:w-[38rem] lg:w-[44rem] aspect-video rounded-md  object-cover mx-auto border border-emerald-400/30 mt-0"
         />
 
         <Arrow

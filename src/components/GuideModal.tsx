@@ -18,7 +18,7 @@ export default function GuideModal({ onClose, onCreatePlaylist }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      <div className="absolute inset-0 backdrop-blur-xl  bg-black/60  " />
 
       <div
         className="relative flex flex-col items-center text-white px-16 py-12

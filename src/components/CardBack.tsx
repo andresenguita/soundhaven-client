@@ -44,7 +44,7 @@ export default function CardBack({
         className="w-full max-w-xs sm:max-w-sm aspect-square object-cover rounded-xl shadow-xl"
       />
 
-      <div className="text-center mt-7">
+      <div className="text-center mt-5">
         <h3 className="text-2xl font-semibold mb-1">{title}</h3>
         <p className="text-base">{artist}</p>
       </div>
@@ -53,16 +53,17 @@ export default function CardBack({
         <>
           <button
             onClick={handleClick}
-            className="rounded-full w-14 h-14 text-2xl text-gray-200 bg-black flex items-center justify-center hover:scale-110 transition shadow-md mt-8 hover:brightness-110"
+            className="rounded-full w-14 h-14 text-2xl text-gray-200 bg-black flex items-center justify-center hover:scale-110 transition shadow-md mt-5 hover:brightness-110"
           >
             {isPaused ? "⯈" : "𝅛𝅛"}
           </button>
 
           <button
             onClick={onAdd}
-            className={`mt-7 px-6 py-2 mb-3 text-lg rounded-xl font-medium shadow-md transition hover:scale-105 ${
+            disabled={isAdded} // ← evita nuevos clics si ya se añadió
+            className={`mt-5 px-6 py-2 mb-0 text-lg rounded-xl font-medium shadow-md transition hover:scale-105 ${
               isAdded
-                ? "bg-gradient-to-r from-emerald-400 to-emerald-500 text-white hover:brightness-110"
+                ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white  hover:brightness-105 "
                 : "bg-black text-gray-200 hover:brightness-110"
             }`}
           >

@@ -14,7 +14,7 @@ export default function LoginPage({ showGuideOnly = false }: Props) {
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-zinc-900 text-white px-4">
-      <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight mb-5">
+      <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight mb-5 mt-2 ">
         Sound<span className="text-emerald-400">Haven</span>
       </h1>
 
@@ -23,7 +23,7 @@ export default function LoginPage({ showGuideOnly = false }: Props) {
           onClick={handleLogin}
           className="flex items-center gap-3 bg-emerald-500 hover:bg-emerald-600
                    active:scale-95 transition font-semibold text-black
-                   py-3 px-7 rounded-full"
+                   py-3 px-7 rounded-full mt-2 mb-7"
         >
           <img
             src="/spotify_primary_logo_rgb_black.png"
