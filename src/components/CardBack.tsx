@@ -8,7 +8,8 @@ interface Props {
   token: string;
   img: string;
   onAdd: () => void;
-  showControls?: boolean; // ← NUEVO
+  showControls?: boolean;
+  isAdded?: boolean;
 }
 
 const API_URL = import.meta.env.VITE_API_URL ?? "";
@@ -21,6 +22,7 @@ export default function CardBack({
   token,
   onAdd,
   showControls = true,
+  isAdded = false,
 }: Props) {
   const { isPaused, playTrack, pause } = useSpotifyPlayer();
 
@@ -58,9 +60,13 @@ export default function CardBack({
 
           <button
             onClick={onAdd}
-            className="mt-7 px-6 py-2 mb-3 text-lg rounded-xl font-medium shadow-md text-gray-200 hover:brightness-110 hover:scale-105 transition bg-black"
+            className={`mt-7 px-6 py-2 mb-3 text-lg rounded-xl font-medium shadow-md transition hover:scale-105 ${
+              isAdded
+                ? "bg-gradient-to-r from-emerald-400 to-emerald-500 text-white hover:brightness-110"
+                : "bg-black text-gray-200 hover:brightness-110"
+            }`}
           >
-            + Add to SoundHaven playlist
+            {isAdded ? "✓ Added to Playlist" : "+ Add to SoundHaven playlist"}
           </button>
         </>
       )}

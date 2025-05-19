@@ -29,6 +29,7 @@ export default function CardsPage() {
   const [selected, setSelected] = useState<number | null>(null);
   const [visibleCards, setVisibleCards] = useState<CardData[]>([]);
   const [showGuideModal, setShowGuideModal] = useState(false);
+  const [addedUris, setAddedUris] = useState<string[]>([]);
 
   useEffect(() => {
     if (!localStorage.getItem("firstLoginDone")) setShowGuideModal(true);
@@ -62,16 +63,22 @@ export default function CardsPage() {
 
   const handleCreatePlaylistAndContinue = async () => {
     try {
-      await fetch(`${API_URL}/api/playlist/create`, {
+      const res = await fetch(`${API_URL}/api/playlist/create`, {
         method: "POST",
         credentials: "include",
         headers: { Authorization: `Bearer ${token}` },
       });
+
+      if (!res.ok) {
+        throw new Error("No se pudo crear la playlist");
+      }
+
+      localStorage.setItem("firstLoginDone", "true");
+      setShowGuideModal(false);
     } catch (e) {
-      console.error(e);
+      console.error("❌ Error al crear playlist:", e);
+      // aquí puedes mostrar un error visual si quieres
     }
-    localStorage.setItem("firstLoginDone", "true");
-    setShowGuideModal(false);
   };
 
   const handleLogoutAndBack = () => {
@@ -95,6 +102,8 @@ export default function CardsPage() {
       const data = await res.json();
       if (!res.ok)
         throw new Error(data.error || "No se pudo añadir a la playlist");
+
+      setAddedUris((prev) => [...prev, uri]);
       console.log("✅ Añadida a la playlist");
     } catch (e) {
       console.error("❌ Error al añadir canción:", e);
@@ -133,10 +142,11 @@ export default function CardsPage() {
                 back={
                   <CardBack
                     {...card}
-                    img={card.cover} // ← cover en lugar de img
+                    img={card.cover}
                     token={token!}
                     onAdd={() => handleAddToPlaylist(card.uri)}
-                    showControls={false} // ← sin botones en el tablero
+                    showControls={false}
+                    isAdded={addedUris.includes(card.uri)}
                   />
                 }
                 isFlipped={selected === i}
@@ -148,7 +158,7 @@ export default function CardsPage() {
         </div>
       </LayoutGroup>
 
-      <footer className="py-8 text-center text-zinc-600">
+      <footer className="pb-8 pt-5 text-center text-zinc-400 text-lg">
         Our next sound voyage in: <span className="font-medium">{time}</span>
       </footer>
 
@@ -163,9 +173,10 @@ export default function CardsPage() {
         {selected !== null && (
           <CardBack
             {...visibleCards[selected]}
-            img={visibleCards[selected].cover} // ← cover también en el modal
+            img={visibleCards[selected].cover}
             token={token!}
             onAdd={() => handleAddToPlaylist(visibleCards[selected].uri)}
+            isAdded={addedUris.includes(visibleCards[selected].uri)}
           />
         )}
       </ModalCard>

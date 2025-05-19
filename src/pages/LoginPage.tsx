@@ -34,7 +34,7 @@ export default function LoginPage({ showGuideOnly = false }: Props) {
         </button>
       )}
 
-      <div className="mb-1 w-full max-w-4xl">
+      <div className="mb-1 w-full max-w-4xl ">
         <GuideCarousel />
       </div>
     </main>

@@ -2,12 +2,45 @@ import { useEffect, useState } from "react";
 
 /* 6 pasos de la guía */
 const slides = [
-  { img: "/guide/step1A.png", caption: "Flip one of the three daily cards" },
-  { img: "/guide/step2.png", caption: "Listen to the track it reveals" },
-  { img: "/guide/step3.png", caption: "Add it to your SoundHaven playlist" },
-  { img: "/guide/step4.png", caption: "Keep your daily streak alive" },
-  { img: "/guide/step5.png", caption: "Share a card with friends" },
-  { img: "/guide/step6.png", caption: "Explore your discovery log" },
+  {
+    img: "/guide/step1.png",
+    title: "WELCOME TO SOUNDHAVEN",
+    caption: "Let images guide you to songs that speak beyond sound",
+  },
+  {
+    img: "/guide/step2.png",
+    title: "PICK ONE CARD",
+    caption: "Each card hides a song and its image hints at the mood behind it",
+  },
+  {
+    img: "/guide/step3.png",
+    title: "FLIP AND LISTEN",
+    caption: "Turn the card to reveal the track and start listening",
+  },
+  {
+    img: "/guide/step4.png",
+    title: "ADD IT TO YOUR PLAYLIST",
+    caption:
+      "Add the songs you connect with to your personal SoundHaven playlist",
+  },
+  {
+    img: "/guide/step5.png",
+    title: "NEW CARDS EVERY DAY",
+    caption:
+      "Cards refresh once the countdown reaches zero and every session feels unique",
+  },
+  {
+    img: "/guide/step6.png",
+    title: "CURATED WITH INTENTION",
+    caption:
+      "These songs are handpicked from books and trusted music communities",
+  },
+  {
+    img: "/guide/step7.png",
+    title: "YOUR PLAYLIST IN SPOTIFY",
+    caption:
+      "Access your SoundHaven playlist anytime directly from your Spotify library",
+  },
 ];
 
 type Props = { onFinish?: () => void };
@@ -39,18 +72,20 @@ export default function GuideCarousel({ onFinish }: Props) {
 
   return (
     <section
-      className="mt-6 inline-flex flex-col items-center gap-6
-                 bg-zinc-800/30 border border-zinc-700/60 backdrop-blur-md
-                 px-16 py-8 rounded-2xl"
+      className="mt-6 w-full max-w-4xl mx-auto flex flex-col items-center gap-6
+             bg-zinc-800/30 border border-zinc-700/60 backdrop-blur-md
+             px-4 sm:px-8 py-8 rounded-2xl"
     >
-      <h2 className="text-lg font-semibold text-zinc-200">HOW DOES IT WORK?</h2>
+      <h2 className="text-lg font-semibold text-zinc-200 mt-0 pt-0">
+        {slides[idx].title}
+      </h2>
 
       {/* Imagen (relative) + flechas absolutas */}
       <div className="relative">
         <img
           src={slides[idx].img}
           alt=""
-          className="w-[32rem] md:w-[38rem] lg:w-[44rem] aspect-video rounded-md shadow-md object-cover mx-auto"
+          className="w-[32rem] md:w-[38rem] lg:w-[44rem] aspect-video rounded-md shadow-md object-cover mx-auto border border-zinc-700/60"
         />
 
         <Arrow
