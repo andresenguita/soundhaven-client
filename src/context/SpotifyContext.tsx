@@ -34,7 +34,7 @@ export function SpotifyProvider({ children }: { children: ReactNode }) {
 
     if (urlToken) {
       setToken(urlToken);
-      window.history.replaceState({}, "", "/cards"); // Limpia la URL y redirige
+      window.history.replaceState({}, "", window.location.pathname); // limpia el token pero NO redirige
       setInitialized(true);
       return;
     }

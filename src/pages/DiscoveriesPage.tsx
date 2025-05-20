@@ -106,8 +106,10 @@ export default function DiscoveriesPage() {
                       className="w-full h-full object-cover rounded-xl"
                     />
                     {log.added && (
-                      <span className="absolute bottom-3 right-3 text-emerald-400 text-4xl">
-                        ♥
+                      <span className="absolute top-4 right-5 text-cyan-500 text-6xl">
+                        <p className="text-emerald-100 drop-shadow-[0_0_10px_#0ff]">
+                          ✦
+                        </p>
                       </span>
                     )}
                   </div>

@@ -6,8 +6,10 @@ import Card3D from "../components/Card3D";
 import ModalCard from "../components/ModalCard";
 import CardBack from "../components/CardBack";
 import GuideModal from "../components/GuideModal";
+import GuideModalReadOnly from "../components/GuideModalReadOnly";
 import { useCountdown } from "../hooks/useCountdown";
 import { useSpotify } from "../context/SpotifyContext";
+import Toast from "../components/Toast";
 
 interface CardData {
   img: string;
@@ -25,20 +27,33 @@ export default function CardsPage() {
   const navigate = useNavigate();
   const time = useCountdown();
 
+  const [playlistCreatedMsg, setPlaylistCreatedMsg] = useState(false);
   const [cards, setCards] = useState<CardData[]>([]);
   const [selected, setSelected] = useState<number | null>(null);
   const [visibleCards, setVisibleCards] = useState<CardData[]>([]);
   const [showGuideModal, setShowGuideModal] = useState(false);
+  const [showReadOnlyGuide, setShowReadOnlyGuide] = useState(false);
   const [addedUris, setAddedUris] = useState<string[]>([]);
   const [menuOpen, setMenuOpen] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-
   const [userId, setUserId] = useState("");
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!localStorage.getItem("firstLoginDone")) setShowGuideModal(true);
-  }, []);
+    const checkPlaylistExists = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/playlist/exists`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        setShowGuideModal(!data.exists);
+      } catch (err) {
+        console.error("Error comprobando existencia de playlist:", err);
+      }
+    };
+
+    if (token) checkPlaylistExists();
+  }, [token]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -173,8 +188,12 @@ export default function CardsPage() {
         throw new Error("No se pudo crear la playlist");
       }
 
-      localStorage.setItem("firstLoginDone", "true");
+      localStorage.removeItem("firstLoginDone");
       setShowGuideModal(false);
+      setTimeout(() => {
+        setPlaylistCreatedMsg(true);
+        setTimeout(() => setPlaylistCreatedMsg(false), 4000);
+      }, 500);
     } catch (e) {
       console.error("❌ Error al crear playlist:", e);
     }
@@ -237,11 +256,11 @@ export default function CardsPage() {
             <img
               src={avatarUrl ?? "/avatar.png"}
               alt="Avatar"
-              className="w-20 h-20 rounded-full border-2   border-white hover:border-emerald-400 hover:scale-110 transition object-cover"
+              className="w-20 h-20 rounded-full border-2 border-white hover:border-emerald-400 hover:scale-110 transition object-cover"
             />
           </button>
           {menuOpen && (
-            <div className=" mt-4 bg-zinc-800 text-white rounded-lg shadow-lg w-32 absolute right-0 z-50">
+            <div className="mt-4 bg-zinc-800 text-white rounded-lg shadow-lg w-32 absolute right-0 z-50">
               <ul className="flex flex-col divide-y divide-zinc-700">
                 <li>
                   <button
@@ -249,9 +268,20 @@ export default function CardsPage() {
                       navigate("/discoveries");
                       setMenuOpen(false);
                     }}
-                    className="w-full text-right px-4 py-2 hover:bg-zinc-700 hover:text-emerald-400  rounded-t-lg"
+                    className="w-full text-right px-4 py-2 hover:bg-zinc-700 hover:text-emerald-400 rounded-t-lg"
                   >
                     Haven Vault
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={() => {
+                      setShowReadOnlyGuide(true);
+                      setMenuOpen(false);
+                    }}
+                    className="w-full text-right px-4 py-2 hover:bg-zinc-700 hover:text-emerald-400"
+                  >
+                    Guide
                   </button>
                 </li>
                 <li>
@@ -260,7 +290,7 @@ export default function CardsPage() {
                       handleLogoutAndBack();
                       setMenuOpen(false);
                     }}
-                    className="w-full text-right px-4 py-2 hover:bg-zinc-700 hover:text-emerald-400  rounded-b-lg "
+                    className="w-full text-right px-4 py-2 hover:bg-zinc-700 hover:text-emerald-400 rounded-b-lg"
                   >
                     Log out
                   </button>
@@ -272,7 +302,7 @@ export default function CardsPage() {
       </header>
 
       <LayoutGroup>
-        <div className="flex-grow flex items-center justify-center ">
+        <div className="flex-grow flex items-center justify-center">
           <div className="flex gap-10 flex-wrap justify-center items-center">
             {visibleCards.map((card, i) => (
               <Card3D
@@ -315,6 +345,10 @@ export default function CardsPage() {
         />
       )}
 
+      {showReadOnlyGuide && (
+        <GuideModalReadOnly onClose={() => setShowReadOnlyGuide(false)} />
+      )}
+
       <ModalCard open={selected !== null} onClose={handleCloseCard}>
         {selected !== null && (
           <CardBack
@@ -326,6 +360,8 @@ export default function CardsPage() {
           />
         )}
       </ModalCard>
+
+      <Toast message="Playlist created!" show={playlistCreatedMsg} />
     </main>
   );
 }

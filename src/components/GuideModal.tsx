@@ -2,12 +2,17 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import GuideCarousel from "./GuideCarousel";
 
-type Props = {
+interface Props {
   onClose: () => void;
-  onCreatePlaylist: () => void | Promise<void>;
-};
+  onCreatePlaylist?: () => void | Promise<void>;
+  showCreateButton?: boolean;
+}
 
-export default function GuideModal({ onClose, onCreatePlaylist }: Props) {
+export default function GuideModal({
+  onClose,
+  onCreatePlaylist,
+  showCreateButton = true,
+}: Props) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -25,34 +30,35 @@ export default function GuideModal({ onClose, onCreatePlaylist }: Props) {
       >
         ←
       </button>
-      <div className="absolute inset-0 backdrop-blur-xl  bg-black/60  " />
+
+      <div className="absolute inset-0 backdrop-blur-xl bg-black/60" />
 
       <div
-        className="relative flex flex-col items-center text-white px-16 py-12
-             w-[96vw] max-w-7xl rounded-2xl border border-transparent bg-transparent"
+        className="relative flex flex-col items-center text-white px-4 sm:px-8 py-12
+                   w-[96vw] max-w-6xl rounded-2xl border border-transparent bg-transparent"
       >
-        {/* flecha roja */}
+        <GuideCarousel onFinish={() => setReady(true)} forceLarge={true} />
 
-        <GuideCarousel onFinish={() => setReady(true)} />
-
-        <div className="mt-0 flex justify-center h-14">
-          <AnimatePresence>
-            {ready && (
-              <motion.button
-                key="cta"
-                onClick={onCreatePlaylist}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-                transition={{ duration: 0.35 }}
-                className="px-10 py-3 rounded-full font-semibold
-                           bg-emerald-500 hover:bg-emerald-600 text-black"
-              >
-                Crear playlist y comenzar
-              </motion.button>
-            )}
-          </AnimatePresence>
-        </div>
+        {showCreateButton && (
+          <div className="mt-0 flex justify-center h-14">
+            <AnimatePresence>
+              {ready && (
+                <motion.button
+                  key="cta"
+                  onClick={onCreatePlaylist}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 20 }}
+                  transition={{ duration: 0.35 }}
+                  className="px-10 py-3 rounded-full font-semibold
+                             bg-emerald-500 hover:bg-emerald-600 text-black"
+                >
+                  Crear playlist y comenzar
+                </motion.button>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
       </div>
     </div>
   );

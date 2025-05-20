@@ -1,5 +1,7 @@
 // src/pages/LoginPage.tsx
 import GuideCarousel from "../components/GuideCarousel";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 type Props = {
   showGuideOnly?: boolean;
@@ -12,8 +14,17 @@ export default function LoginPage({ showGuideOnly = false }: Props) {
     window.location.href = `${API_URL}/api/auth/login`;
   };
 
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("access_token")) {
+      navigate("/cards");
+    }
+  }, []);
+
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-zinc-900 text-white px-4">
+    <main className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-emerald-950 via-black to-zinc-950 text-white px-4">
       <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight mb-5 mt-2 ">
         Sound<span className="text-emerald-400">Haven</span>
       </h1>
