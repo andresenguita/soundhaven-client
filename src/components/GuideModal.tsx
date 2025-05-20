@@ -18,6 +18,13 @@ export default function GuideModal({ onClose, onCreatePlaylist }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <button
+        onClick={onClose}
+        className="fixed top-2 left-6 text-5xl font-semibold absolute top-0 left-0 z-[60] text-white hover:text-red-500 transition"
+        aria-label="logout"
+      >
+        ←
+      </button>
       <div className="absolute inset-0 backdrop-blur-xl  bg-black/60  " />
 
       <div
@@ -25,28 +32,10 @@ export default function GuideModal({ onClose, onCreatePlaylist }: Props) {
              w-[96vw] max-w-7xl rounded-2xl border border-transparent bg-transparent"
       >
         {/* flecha roja */}
-        <button
-          onClick={onClose}
-          className="fixed top-6 left-6 z-[60] text-red-400 hover:text-red-500 transition"
-          aria-label="logout"
-        >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="w-8 h-8"
-          >
-            <line x1="19" y1="12" x2="5" y2="12" />
-            <polyline points="12 19 5 12 12 5" />
-          </svg>
-        </button>
 
         <GuideCarousel onFinish={() => setReady(true)} />
 
-        <div className="mt-6 flex justify-center h-14">
+        <div className="mt-0 flex justify-center h-14">
           <AnimatePresence>
             {ready && (
               <motion.button

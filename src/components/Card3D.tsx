@@ -58,7 +58,7 @@ export default function Card3D({
         </div>
 
         {/* Cara trasera */}
-        <div className="absolute inset-0 rotate-y-180 backface-hidden rounded-md overflow-hidden shadow-lg">
+        <div className="absolute inset-0 rotate-y-180 backface-hidden rounded-xl overflow-hidden shadow-lg">
           {back}
         </div>
       </motion.div>
