@@ -71,7 +71,7 @@ export default function DiscoveriesPage() {
     cards.find((c) => c.uri === uri);
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-black via-black to-emerald-800 text-white px-6 py-5">
+    <main className="min-h-screen bg-gradient-to-br from-black via-emerald-950 to-black text-white px-6 py-5">
       <button
         className=" hover:text-emerald-500 text-5xl font-semibold absolute top-9 left-24"
         onClick={() => navigate("/cards")}

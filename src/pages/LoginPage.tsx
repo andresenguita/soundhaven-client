@@ -24,7 +24,7 @@ export default function LoginPage({ showGuideOnly = false }: Props) {
   }, []);
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-emerald-950 via-black to-zinc-950 text-white px-4">
+    <main className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-black via-emerald-950 to-black text-white px-4">
       <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight mb-5 mt-2 ">
         Sound<span className="text-emerald-400">Haven</span>
       </h1>

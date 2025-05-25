@@ -224,126 +224,129 @@ export default function CardsPage() {
 
   /* ───────────── UI ───────────── */
   return (
-    <main className="min-h-screen bg-gradient-to-br from-emerald-950 via-black to-zinc-950 text-white flex flex-col">
+    <main className="min-h-screen bg-gradient-to-br from-black via-emerald-950 to-black text-white flex flex-col">
       {/* ░░ Header ░░ */}
       <header className="relative flex items-center justify-between p-6 pb-4">
         <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight mx-auto mt-2">
           Sound<span className="text-emerald-400">Haven</span>
         </h1>
+        {initialized && (
+          <div className="absolute top-7 right-7" ref={menuRef}>
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="flex items-center gap-2 text-lg font-medium hover:text-emerald-400"
+            >
+              <img
+                src={avatarUrl ?? "/avatar.png"}
+                alt="Avatar"
+                className="w-20 h-20 rounded-full border-2 border-white hover:border-emerald-400 hover:scale-110 transition object-cover"
+              />
+            </button>
 
-        <div className="absolute top-7 right-7" ref={menuRef}>
-          <button
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="flex items-center gap-2 text-lg font-medium hover:text-emerald-400"
-          >
-            <img
-              src={avatarUrl ?? "/avatar.png"}
-              alt="Avatar"
-              className="w-20 h-20 rounded-full border-2 border-white hover:border-emerald-400 hover:scale-110 transition object-cover"
-            />
-          </button>
-
-          {menuOpen && (
-            <div className="mt-4 bg-zinc-800 rounded-lg shadow-lg w-32 absolute right-0 z-50">
-              <ul className="flex flex-col divide-y divide-zinc-700">
-                <li>
-                  <button
-                    onClick={() => {
-                      navigate("/discoveries");
-                      setMenuOpen(false);
-                    }}
-                    className="w-full text-right px-4 py-2 hover:bg-zinc-700 hover:text-emerald-400 rounded-t-lg"
-                  >
-                    Haven Vault
-                  </button>
-                </li>
-                <li>
-                  <button
-                    onClick={() => {
-                      setShowReadOnlyGuide(true);
-                      setMenuOpen(false);
-                    }}
-                    className="w-full text-right px-4 py-2 hover:bg-zinc-700 hover:text-emerald-400"
-                  >
-                    Guide
-                  </button>
-                </li>
-                <li>
-                  <button
-                    onClick={() => {
-                      localStorage.removeItem("firstLoginDone");
-                      logout();
-                      navigate("/");
-                      setMenuOpen(false);
-                    }}
-                    className="w-full text-right px-4 py-2 hover:bg-zinc-700 hover:text-emerald-400 rounded-b-lg"
-                  >
-                    Log out
-                  </button>
-                </li>
-              </ul>
-            </div>
-          )}
-        </div>
+            {menuOpen && (
+              <div className="mt-4 bg-zinc-800 rounded-lg shadow-lg w-32 absolute right-0 z-50">
+                <ul className="flex flex-col divide-y divide-zinc-700">
+                  <li>
+                    <button
+                      onClick={() => {
+                        navigate("/discoveries");
+                        setMenuOpen(false);
+                      }}
+                      className="w-full text-right px-4 py-2 hover:bg-zinc-700 hover:text-emerald-400 rounded-t-lg"
+                    >
+                      Haven Vault
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      onClick={() => {
+                        setShowReadOnlyGuide(true);
+                        setMenuOpen(false);
+                      }}
+                      className="w-full text-right px-4 py-2 hover:bg-zinc-700 hover:text-emerald-400"
+                    >
+                      Guide
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      onClick={() => {
+                        localStorage.removeItem("firstLoginDone");
+                        logout();
+                        navigate("/");
+                        setMenuOpen(false);
+                      }}
+                      className="w-full text-right px-4 py-2 hover:bg-zinc-700 hover:text-emerald-400 rounded-b-lg"
+                    >
+                      Log out
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
       </header>
-
       {/* ░░ prompt ░░ */}
       {initialized && !hasChosen && (
         <p className="mt-8 text-center text-2xl font-semibold text-emerald-300 animate-pulse">
           Select your daily card!
         </p>
       )}
-
       {/* ░░ cartas ░░ */}
-      <LayoutGroup>
-        <div className="flex-grow flex items-center justify-center">
-          <div className="flex gap-10 flex-wrap justify-center items-center">
-            {visibleCards.map((card, idx) => {
-              const blocked = hasChosen && idx !== chosenIdx;
-              return (
-                <div
-                  key={idx}
-                  className={
-                    blocked ? "pointer-events-none opacity-60 grayscale" : ""
-                  }
-                >
-                  <Card3D
-                    id={`card-${idx}`}
-                    front={
-                      <img
-                        src={card.img}
-                        alt={card.title}
-                        className="w-full h-full object-cover rounded-xl"
-                      />
+      {initialized && (
+        <LayoutGroup>
+          <div className="flex-grow flex items-center justify-center">
+            <div className="flex gap-10 flex-wrap justify-center items-center">
+              {visibleCards.map((card, idx) => {
+                const blocked = hasChosen && idx !== chosenIdx;
+                return (
+                  <div
+                    key={idx}
+                    className={
+                      blocked ? "pointer-events-none opacity-90 grayscale" : ""
                     }
-                    back={
-                      <CardBack
-                        {...card}
-                        img={card.cover}
-                        token={token!}
-                        onAdd={() => handleAddToPlaylist(card.uri)}
-                        showControls={false}
-                        isAdded={addedUris.includes(card.uri)}
-                      />
-                    }
-                    isFlipped={flippedIdx === idx}
-                    onSelect={() => handleFlip(idx)}
-                    description={card.description}
-                  />
-                </div>
-              );
-            })}
+                  >
+                    <Card3D
+                      id={`card-${idx}`}
+                      front={
+                        <img
+                          src={card.img}
+                          alt={card.title}
+                          className="w-full h-full object-cover rounded-xl"
+                        />
+                      }
+                      back={
+                        <CardBack
+                          {...card}
+                          img={card.cover}
+                          token={token!}
+                          onAdd={() => handleAddToPlaylist(card.uri)}
+                          showControls={false}
+                          isAdded={addedUris.includes(card.uri)}
+                        />
+                      }
+                      isFlipped={flippedIdx === idx}
+                      onSelect={() => handleFlip(idx)}
+                      description={card.description}
+                    />
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      </LayoutGroup>
-
+        </LayoutGroup>
+      )}
+      {/* ░░ mensaje elección ░░ */}
       {/* ░░ footer ░░ */}
-      <footer className="pt-2 pb-6 pl-6 text-left text-zinc-400 text-xl">
-        Next cards in:{" "}
-        <span className="font-medium animate-pulse text-emerald-400">
-          {time}
-        </span>
-      </footer>
+      {initialized && (
+        <footer className="pt-2 pb-6 pl-6 text-left text-zinc-400 text-xl">
+          Next cards in:{" "}
+          <span className="font-medium animate-pulse text-emerald-400">
+            {time}
+          </span>
+        </footer>
+      )}
 
       {/* ░░ modales & toast ░░ */}
       {showGuideModal && (
@@ -372,11 +375,9 @@ export default function CardsPage() {
           }}
         />
       )}
-
       {showReadOnlyGuide && (
         <GuideModalReadOnly onClose={() => setShowReadOnlyGuide(false)} />
       )}
-
       <ModalCard open={flippedIdx !== null} onClose={handleCloseCard}>
         {flippedIdx !== null && (
           <CardBack
@@ -388,7 +389,6 @@ export default function CardsPage() {
           />
         )}
       </ModalCard>
-
       <Toast message="Playlist created!" show={playlistCreatedMsg} />
     </main>
   );
