@@ -1,5 +1,5 @@
 // pages/CardsPage.tsx
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { LayoutGroup } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import Card3D from "../components/Card3D";
@@ -23,117 +23,164 @@ interface CardData {
 const API_URL = import.meta.env.VITE_API_URL ?? "";
 
 export default function CardsPage() {
+  /* ───────── context & hooks ───────── */
   const { logout, token } = useSpotify();
   const navigate = useNavigate();
   const time = useCountdown();
 
-  const [playlistCreatedMsg, setPlaylistCreatedMsg] = useState(false);
-  const [cards, setCards] = useState<CardData[]>([]);
-  const [selected, setSelected] = useState<number | null>(null);
+  /* ───────────── state ───────────── */
   const [visibleCards, setVisibleCards] = useState<CardData[]>([]);
-  const [showGuideModal, setShowGuideModal] = useState(false);
-  const [showReadOnlyGuide, setShowReadOnlyGuide] = useState(false);
+  const [chosenIdx, setChosenIdx] = useState<number | null>(null); // carta del día
+  const [flippedIdx, setFlippedIdx] = useState<number | null>(null); // carta abierta en modal
+  const [hasChosen, setHasChosen] = useState(false);
+  const [initialized, setInitialized] = useState(false); // ⬅️ NUEVO
+
   const [addedUris, setAddedUris] = useState<string[]>([]);
-  const [menuOpen, setMenuOpen] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [userId, setUserId] = useState("");
+
+  const [playlistCreatedMsg, setPlaylistCreatedMsg] = useState(false);
+  const [showGuideModal, setShowGuideModal] = useState(false);
+  const [showReadOnlyGuide, setShowReadOnlyGuide] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+
   const menuRef = useRef<HTMLDivElement>(null);
 
+  /* ─────────────────────────────────── */
+  /* 1. Verificar si existe la playlist */
+  /* ─────────────────────────────────── */
   useEffect(() => {
-    const checkPlaylistExists = async () => {
+    if (!token) return;
+
+    const checkPlaylist = async () => {
       try {
         const res = await fetch(`${API_URL}/api/playlist/exists`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
-        setShowGuideModal(!data.exists);
+        setShowGuideModal(!data.exists); // si NO existe → muestra modal
       } catch (err) {
         console.error("Error comprobando existencia de playlist:", err);
       }
     };
 
-    if (token) checkPlaylistExists();
+    checkPlaylist();
   }, [token]);
 
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMenuOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  /* ───────────── helpers ───────────── */
+  const loadCardsAndChoice = useCallback(async () => {
+    if (!token || !userId) return;
 
+    /* 1 — cartas diarias */
+    const cardsRes = await fetch(
+      `${API_URL}/api/cards/daily?userId=${userId}`,
+      {
+        credentials: "include",
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    const cards: CardData[] = await cardsRes.json();
+    setVisibleCards(cards);
+
+    /* 2 — comprobar si ya eligió hoy */
+    const logRes = await fetch(
+      `${API_URL}/api/discovery/today?userId=${userId}`,
+      {
+        credentials: "include",
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    if (logRes.ok) {
+      const { trackUri } = await logRes.json();
+      const idx = cards.findIndex((c) => c.uri === trackUri);
+      if (idx !== -1) {
+        setChosenIdx(idx);
+        setHasChosen(true);
+      } else {
+        setChosenIdx(null);
+        setHasChosen(false);
+      }
+    } else {
+      setChosenIdx(null);
+      setHasChosen(false);
+    }
+    setFlippedIdx(null); // no abrir modal por defecto
+    setInitialized(true);
+  }, [token, userId]);
+
+  /* ───────────── side-effects ───────────── */
+  /* perfil + avatar */
   useEffect(() => {
     if (!token) return;
 
-    fetch(`${API_URL}/api/me`, {
-      headers: { Authorization: `Bearer ${token}` },
-      credentials: "include",
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setUserId(data.userId);
-        setAvatarUrl(data.avatarUrl ?? null);
-      })
-      .catch((err) => console.error("No se pudo obtener userId", err));
-
-    fetch(`${API_URL}/api/cards`, {
-      credentials: "include",
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => res.json())
-      .then((data: CardData[]) => {
-        setCards(data);
-        setVisibleCards(getRandomCards(data, 3));
-      })
-      .catch(console.error);
+    (async () => {
+      const me = await fetch(`${API_URL}/api/me`, {
+        credentials: "include",
+        headers: { Authorization: `Bearer ${token}` },
+      }).then((r) => r.json());
+      setUserId(me.userId);
+      setAvatarUrl(me.avatarUrl ?? null);
+    })();
   }, [token]);
 
+  /* cartas + elección del día */
+  useEffect(() => {
+    if (userId) loadCardsAndChoice();
+  }, [userId, loadCardsAndChoice]);
+
+  /* refresco automático a medianoche */
+  useEffect(() => {
+    if (time === "00h 00m 00s") loadCardsAndChoice();
+  }, [time, loadCardsAndChoice]);
+
+  /* canciones añadidas a playlist */
   useEffect(() => {
     if (!token || !userId) return;
 
     fetch(`${API_URL}/api/discovery/all?userId=${userId}`, {
-      headers: { Authorization: `Bearer ${token}` },
       credentials: "include",
+      headers: { Authorization: `Bearer ${token}` },
     })
-      .then((res) => res.json())
-      .then((logs) => {
-        const uris = logs
-          .filter((log: any) => log.added)
-          .map((log: any) => log.trackUri);
-        setAddedUris(uris);
-      })
+      .then((r) => r.json())
+      .then((logs) =>
+        setAddedUris(
+          logs.filter((l: any) => l.added).map((l: any) => l.trackUri)
+        )
+      )
       .catch((err) => console.error("Error cargando DiscoveryLogs:", err));
   }, [token, userId]);
 
+  /* cerrar menú si clic fuera */
   useEffect(() => {
-    if (parseInt(time) === 0 && cards.length > 0) {
-      setVisibleCards(getRandomCards(cards, 3));
-      setSelected(null);
-    }
-  }, [time]);
+    const outside = (e: MouseEvent) =>
+      menuRef.current &&
+      !menuRef.current.contains(e.target as Node) &&
+      setMenuOpen(false);
+    document.addEventListener("mousedown", outside);
+    return () => document.removeEventListener("mousedown", outside);
+  }, []);
 
-  const getRandomCards = (data: CardData[], count: number) => {
-    const shuffled = [...data].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, count);
-  };
+  /* ───────────── eventos carta ───────────── */
+  const handleFlip = async (idx: number) => {
+    if (hasChosen && idx !== chosenIdx) return; // solo deja girar la elegida
 
-  const handleFlip = async (index: number) => {
-    const card = visibleCards[index];
-    setSelected(index);
+    setFlippedIdx(idx);
 
-    if (!userId || !card) return;
+    if (!hasChosen) {
+      setHasChosen(true);
+      setChosenIdx(idx);
 
-    try {
+      const card = visibleCards[idx];
+      if (!card) return;
+
       await fetch(`${API_URL}/api/discovery`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
         credentials: "include",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           userId,
           cardTitle: card.title,
@@ -141,73 +188,14 @@ export default function CardsPage() {
           added: false,
         }),
       });
-    } catch (err) {
-      console.error("❌ Error al guardar DiscoveryLog", err);
     }
   };
 
-  const handleCloseCard = async () => {
-    if (selected === null || !userId || !token) {
-      setSelected(null);
-      return;
-    }
-
-    const card = visibleCards[selected];
-
-    try {
-      await fetch(`${API_URL}/api/discovery`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          userId,
-          cardTitle: card.title,
-          trackUri: card.uri,
-          added: addedUris.includes(card.uri),
-        }),
-      });
-    } catch (err) {
-      console.error("❌ Error al guardar DiscoveryLog", err);
-    } finally {
-      setSelected(null);
-    }
-  };
-
-  const handleCreatePlaylistAndContinue = async () => {
-    try {
-      const res = await fetch(`${API_URL}/api/playlist/create`, {
-        method: "POST",
-        credentials: "include",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (!res.ok) {
-        throw new Error("No se pudo crear la playlist");
-      }
-
-      localStorage.removeItem("firstLoginDone");
-      setShowGuideModal(false);
-      setTimeout(() => {
-        setPlaylistCreatedMsg(true);
-        setTimeout(() => setPlaylistCreatedMsg(false), 4000);
-      }, 500);
-    } catch (e) {
-      console.error("❌ Error al crear playlist:", e);
-    }
-  };
-
-  const handleLogoutAndBack = () => {
-    localStorage.removeItem("firstLoginDone");
-    logout();
-    navigate("/");
-  };
+  const handleCloseCard = () => setFlippedIdx(null);
 
   const handleAddToPlaylist = async (uri: string) => {
     try {
-      const res = await fetch(`${API_URL}/api/playlist/add`, {
+      const ok = await fetch(`${API_URL}/api/playlist/add`, {
         method: "POST",
         credentials: "include",
         headers: {
@@ -215,14 +203,10 @@ export default function CardsPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ uri }),
-      });
+      }).then((r) => r.ok);
+      if (!ok) throw new Error("No se pudo añadir a la playlist");
 
-      const data = await res.json();
-      if (!res.ok)
-        throw new Error(data.error || "No se pudo añadir a la playlist");
-
-      setAddedUris((prev) => [...prev, uri]);
-      console.log("✅ Añadida a la playlist");
+      setAddedUris((p) => [...p, uri]);
 
       await fetch(`${API_URL}/api/discovery/mark-as-added`, {
         method: "POST",
@@ -231,24 +215,23 @@ export default function CardsPage() {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          userId,
-          trackUri: uri,
-        }),
+        body: JSON.stringify({ userId, trackUri: uri }),
       });
     } catch (e) {
-      console.error("❌ Error al añadir canción o marcar en log:", e);
+      console.error("❌", e);
     }
   };
 
+  /* ───────────── UI ───────────── */
   return (
     <main className="min-h-screen bg-gradient-to-br from-emerald-950 via-black to-zinc-950 text-white flex flex-col">
-      <header className="relative flex items-center justify-between p-6 pb-0">
-        <h1 className="text-8xl sm:text-7xl font-extrabold tracking-tight mx-auto mt-12">
+      {/* ░░ Header ░░ */}
+      <header className="relative flex items-center justify-between p-6 pb-4">
+        <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight mx-auto mt-2">
           Sound<span className="text-emerald-400">Haven</span>
         </h1>
 
-        <div className="absolute top-12 right-10" ref={menuRef}>
+        <div className="absolute top-7 right-7" ref={menuRef}>
           <button
             onClick={() => setMenuOpen(!menuOpen)}
             className="flex items-center gap-2 text-lg font-medium hover:text-emerald-400"
@@ -259,8 +242,9 @@ export default function CardsPage() {
               className="w-20 h-20 rounded-full border-2 border-white hover:border-emerald-400 hover:scale-110 transition object-cover"
             />
           </button>
+
           {menuOpen && (
-            <div className="mt-4 bg-zinc-800 text-white rounded-lg shadow-lg w-32 absolute right-0 z-50">
+            <div className="mt-4 bg-zinc-800 rounded-lg shadow-lg w-32 absolute right-0 z-50">
               <ul className="flex flex-col divide-y divide-zinc-700">
                 <li>
                   <button
@@ -287,7 +271,9 @@ export default function CardsPage() {
                 <li>
                   <button
                     onClick={() => {
-                      handleLogoutAndBack();
+                      localStorage.removeItem("firstLoginDone");
+                      logout();
+                      navigate("/");
                       setMenuOpen(false);
                     }}
                     className="w-full text-right px-4 py-2 hover:bg-zinc-700 hover:text-emerald-400 rounded-b-lg"
@@ -301,47 +287,89 @@ export default function CardsPage() {
         </div>
       </header>
 
+      {/* ░░ prompt ░░ */}
+      {initialized && !hasChosen && (
+        <p className="mt-8 text-center text-2xl font-semibold text-emerald-300 animate-pulse">
+          Select your daily card!
+        </p>
+      )}
+
+      {/* ░░ cartas ░░ */}
       <LayoutGroup>
         <div className="flex-grow flex items-center justify-center">
           <div className="flex gap-10 flex-wrap justify-center items-center">
-            {visibleCards.map((card, i) => (
-              <Card3D
-                key={i}
-                id={`card-${i}`}
-                front={
-                  <img
-                    src={card.img}
-                    alt={card.title}
-                    className="w-full h-full object-cover rounded-xl"
+            {visibleCards.map((card, idx) => {
+              const blocked = hasChosen && idx !== chosenIdx;
+              return (
+                <div
+                  key={idx}
+                  className={
+                    blocked ? "pointer-events-none opacity-60 grayscale" : ""
+                  }
+                >
+                  <Card3D
+                    id={`card-${idx}`}
+                    front={
+                      <img
+                        src={card.img}
+                        alt={card.title}
+                        className="w-full h-full object-cover rounded-xl"
+                      />
+                    }
+                    back={
+                      <CardBack
+                        {...card}
+                        img={card.cover}
+                        token={token!}
+                        onAdd={() => handleAddToPlaylist(card.uri)}
+                        showControls={false}
+                        isAdded={addedUris.includes(card.uri)}
+                      />
+                    }
+                    isFlipped={flippedIdx === idx}
+                    onSelect={() => handleFlip(idx)}
+                    description={card.description}
                   />
-                }
-                back={
-                  <CardBack
-                    {...card}
-                    img={card.cover}
-                    token={token!}
-                    onAdd={() => handleAddToPlaylist(card.uri)}
-                    showControls={false}
-                    isAdded={addedUris.includes(card.uri)}
-                  />
-                }
-                isFlipped={selected === i}
-                onSelect={() => handleFlip(i)}
-                description={card.description}
-              />
-            ))}
+                </div>
+              );
+            })}
           </div>
         </div>
       </LayoutGroup>
 
-      <footer className="pt-0 pb-14 text-center text-zinc-500 text-2xl">
-        Our next sound voyage in: <span className="font-medium">{time}</span>
+      {/* ░░ footer ░░ */}
+      <footer className="pt-2 pb-6 pl-6 text-left text-zinc-400 text-xl">
+        Next cards in:{" "}
+        <span className="font-medium animate-pulse text-emerald-400">
+          {time}
+        </span>
       </footer>
 
+      {/* ░░ modales & toast ░░ */}
       {showGuideModal && (
         <GuideModal
-          onClose={handleLogoutAndBack}
-          onCreatePlaylist={handleCreatePlaylistAndContinue}
+          onClose={() => {
+            localStorage.removeItem("firstLoginDone");
+            logout();
+            navigate("/");
+          }}
+          onCreatePlaylist={async () => {
+            try {
+              const ok = await fetch(`${API_URL}/api/playlist/create`, {
+                method: "POST",
+                credentials: "include",
+                headers: { Authorization: `Bearer ${token}` },
+              }).then((r) => r.ok);
+
+              if (ok) {
+                setShowGuideModal(false);
+                setPlaylistCreatedMsg(true);
+                setTimeout(() => setPlaylistCreatedMsg(false), 4000);
+              }
+            } catch (e) {
+              console.error("❌ Error creando playlist:", e);
+            }
+          }}
         />
       )}
 
@@ -349,14 +377,14 @@ export default function CardsPage() {
         <GuideModalReadOnly onClose={() => setShowReadOnlyGuide(false)} />
       )}
 
-      <ModalCard open={selected !== null} onClose={handleCloseCard}>
-        {selected !== null && (
+      <ModalCard open={flippedIdx !== null} onClose={handleCloseCard}>
+        {flippedIdx !== null && (
           <CardBack
-            {...visibleCards[selected]}
-            img={visibleCards[selected].cover}
+            {...visibleCards[flippedIdx]}
+            img={visibleCards[flippedIdx].cover}
             token={token!}
-            onAdd={() => handleAddToPlaylist(visibleCards[selected].uri)}
-            isAdded={addedUris.includes(visibleCards[selected].uri)}
+            onAdd={() => handleAddToPlaylist(visibleCards[flippedIdx].uri)}
+            isAdded={addedUris.includes(visibleCards[flippedIdx].uri)}
           />
         )}
       </ModalCard>
