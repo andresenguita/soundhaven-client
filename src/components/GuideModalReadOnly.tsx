@@ -21,17 +21,20 @@ export default function GuideModalReadOnly({
       {/* X en esquina superior derecha */}
       <button
         onClick={onClose}
-        className="fixed top-16 right-36 text-2xl font-bold text-white hover:text-red-500 z-[60]"
+        className="absolute top-6 right-6 text-3xl font-bold text-white hover:text-red-500 z-[60]"
         aria-label="close"
       >
         ✕
       </button>
 
-      {/* sombra de fondo */}
-      <div className="absolute inset-0 backdrop-blur-xl bg-black/60" />
+      {/* Fondo difuminado */}
+      <div className="absolute inset-0 backdrop-blur-xl bg-transparent" />
 
-      {/* contenedor del carrusel */}
-      <div className="relative flex flex-col items-center text-white px-6 py-8 w-[92vw] max-w-6xl rounded-2xl">
+      {/* Contenedor del carrusel */}
+      <div
+        className="relative flex flex-col items-center text-white px-6 py-10
+                      w-[94vw] max-w-[82rem] rounded-2xl  bg-transparent "
+      >
         <GuideCarousel onFinish={() => setReady(true)} forceLarge={true} />
       </div>
     </div>

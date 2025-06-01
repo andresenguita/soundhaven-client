@@ -1,47 +1,51 @@
 // components/GuideCarousel.tsx
 import { useEffect, useState } from "react";
 
-/* 7 pasos de la guía */
 const slides = [
   {
-    img: "/guide/step1.png",
+    img: "/guide/welcome.png",
     title: "WELCOME TO SOUNDHAVEN",
-    caption:
-      "Welcome to SoundHaven! Let images guide you to songs that speak beyond sound",
+    caption: "A different way to discover music.",
   },
   {
-    img: "/guide/step2.png",
-    title: "PICK ONE CARD",
-    caption:
-      "Pick one card. Each card hides a song and its image hints at the mood behind it",
+    img: "/guide/cards.png",
+    title: "CHOOSE ONE CARD",
+    caption: "3 cards a day. Choose just one.",
   },
   {
-    img: "/guide/step3.png",
+    img: "/guide/flip.png",
     title: "FLIP AND LISTEN",
-    caption: "Turn the card to reveal the track and start listening",
+    caption: "Discover a hidden gem.",
   },
   {
-    img: "/guide/step4.png",
-    title: "ADD IT TO YOUR PLAYLIST",
-    caption:
-      "Add the songs you connect with to your personal SoundHaven playlist",
+    img: "/guide/add.png",
+    title: "ADD TO PLAYLIST",
+    caption: "Play it. Love it. Add it.",
   },
   {
-    img: "/guide/step5.png",
+    img: "/guide/daily.png",
     title: "NEW CARDS EVERY DAY",
-    caption: "Cards refresh every 24 hours",
+    caption: "Cards refresh every 24 hours.",
   },
   {
-    img: "/guide/step6.png",
-    title: "CURATED WITH INTENTION",
-    caption:
-      "These songs are handpicked from books and trusted music communities",
+    img: "/guide/curation.png",
+    title: "HANDPICKED MUSIC",
+    caption: "Selected from books and trusted communities.",
   },
   {
-    img: "/guide/step7.png",
-    title: "YOUR PLAYLIST IN SPOTIFY",
-    caption:
-      "Access your SoundHaven playlist anytime directly from your Spotify library",
+    img: "/guide/playlist.png",
+    title: "YOUR SPOTIFY PLAYLIST",
+    caption: "Your daily discoveries, saved in your SoundHaven playlist.",
+  },
+  {
+    img: "/guide/vault.png",
+    title: "HAVEN VAULT",
+    caption: "Revisit every card you’ve flipped.",
+  },
+  {
+    img: "/guide/start.png",
+    title: "READY?",
+    caption: "Let’s begin your journey.",
   },
 ];
 
@@ -78,11 +82,10 @@ export default function GuideCarousel({ onFinish, forceLarge = false }: Props) {
         forceLarge ? "max-w-[98vw]" : "max-w-6xl"
       } mx-auto flex flex-col items-center gap-6 px-0 sm:px-0 py-0 rounded-2xl`}
     >
-      {/* Imagen (relative) + flechas absolutas */}
       <div className="relative">
         <img
           src={slides[idx].img}
-          alt=""
+          alt={slides[idx].title}
           className={`aspect-video rounded-md object-cover mx-auto border border-emerald-400/30 ${
             forceLarge ? "w-[72rem]" : "w-[32rem] md:w-[38rem] lg:w-[44rem]"
           }`}
@@ -102,7 +105,9 @@ export default function GuideCarousel({ onFinish, forceLarge = false }: Props) {
         />
       </div>
 
-      <p className="text-center text-sm md:text-base">{slides[idx].caption}</p>
+      <p className="text-center text-sm md:text-base text-white">
+        {slides[idx].caption}
+      </p>
 
       <div className="flex gap-3">
         {slides.map((_, i) => (
@@ -122,7 +127,6 @@ export default function GuideCarousel({ onFinish, forceLarge = false }: Props) {
   );
 }
 
-/* Flechas */
 function Arrow({
   dir,
   position,

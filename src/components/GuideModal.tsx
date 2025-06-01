@@ -1,3 +1,4 @@
+// components/GuideModal.tsx
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import GuideCarousel from "./GuideCarousel";
@@ -23,24 +24,27 @@ export default function GuideModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* X en esquina superior derecha */}
       <button
         onClick={onClose}
-        className="fixed top-2 left-6 text-5xl font-semibold absolute top-0 left-0 z-[60] text-white hover:text-red-500 transition"
-        aria-label="logout"
+        className="absolute top-6 left-6 text-5xl font-bold text-white hover:text-red-500 z-[60]"
+        aria-label="close"
       >
         ←
       </button>
 
+      {/* Fondo difuminado */}
       <div className="absolute inset-0 backdrop-blur-xl bg-black/60" />
 
+      {/* Contenedor del modal */}
       <div
-        className="relative flex flex-col items-center text-white px-4 sm:px-8 py-12
-                   w-[96vw] max-w-6xl rounded-2xl border border-transparent bg-transparent"
+        className="relative flex flex-col items-center text-white px-6 py-10
+                   w-[94vw] max-w-[82rem] rounded-2xl bg-transparent"
       >
         <GuideCarousel onFinish={() => setReady(true)} forceLarge={true} />
 
         {showCreateButton && (
-          <div className="mt-0 flex justify-center h-14">
+          <div className="mt-6 flex justify-center">
             <AnimatePresence>
               {ready && (
                 <motion.button
@@ -51,7 +55,7 @@ export default function GuideModal({
                   exit={{ opacity: 0, y: 20 }}
                   transition={{ duration: 0.35 }}
                   className="px-10 py-3 rounded-full font-semibold
-                             bg-emerald-500 hover:bg-emerald-600 text-black"
+                             bg-emerald-500 hover:bg-emerald-600 text-black shadow-lg"
                 >
                   Crear playlist y comenzar
                 </motion.button>
